@@ -23,23 +23,46 @@ public class LeadsController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
-        var query = _db.Leads.AsNoTracking();
+        // Datos quemados para demo (sin DB)
+        var allLeads = new List<LeadDto>
+        {
+            new LeadDto
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                FullName = "Juan Pérez",
+                Email = "juan.perez@example.com",
+                Status = "New",
+                Source = "GoogleAds",
+                CreatedAt = DateTime.UtcNow.AddDays(-2)
+            },
+            new LeadDto
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                FullName = "María Gómez",
+                Email = "maria.gomez@example.com",
+                Status = "MQL",
+                Source = "FacebookAds",
+                CreatedAt = DateTime.UtcNow.AddDays(-1)
+            },
+            new LeadDto
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                FullName = "Carlos Rodríguez",
+                Email = "carlos.rodiguez@example.com",
+                Status = "SQL",
+                Source = "Organic",
+                CreatedAt = DateTime.UtcNow
+            }
+        };
+        //var query = _db.Leads.AsNoTracking();
 
-        var total = await query.CountAsync();
-        var items = await query
+        // Paginación en memoria
+        var total = allLeads.Count;
+        var items = allLeads
             .OrderByDescending(l => l.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(l => new LeadDto
-            {
-                Id = l.Id,
-                FullName = l.FullName,
-                Email = l.Email,
-                Status = l.Status,
-                Source = l.Source,
-                CreatedAt = l.CreatedAt
-            })
-            .ToListAsync();
+            .ToList();
 
         return Ok(new PagedResult<LeadDto>(items, total, page, pageSize));
     }
@@ -47,55 +70,25 @@ public class LeadsController : ControllerBase
     [HttpPatch("{leadId:guid}")]
     public async Task<ActionResult<LeadDto>> UpdateLead(Guid tenantId, Guid leadId, [FromBody] UpdateLeadRequest request)
     {
-        var lead = await _db.Leads.FindAsync(leadId);
-        if (lead == null) return NotFound();
+        var originalStatus = "New";
 
-        var userId = User.Identity?.Name ?? "system";
+        // Si no viene status, dejamos el original
+        var newStatus = string.IsNullOrWhiteSpace(request.Status)
+            ? originalStatus
+            : request.Status;
 
-        // Ejemplo: actualización de estado + auditoría
-        if (!string.IsNullOrWhiteSpace(request.Status) && request.Status != lead.Status)
+        // Construimos un LeadDto "actualizado" de prueba
+        var updatedLead = new LeadDto
         {
-            var oldStatus = lead.Status;
-            lead.Status = request.Status;
-            lead.UpdatedAt = DateTime.UtcNow;
-
-            _db.LeadStatusHistory.Add(new LeadStatusHistory
-            {
-                LeadId = lead.Id,
-                OldStatus = oldStatus,
-                NewStatus = lead.Status,
-                ChangedAt = DateTime.UtcNow,
-                ChangedBy = userId
-            });
-
-            _db.AuditLogs.Add(new AuditLog
-            {
-                EntityType = "Lead",
-                EntityId = lead.Id,
-                PropertyName = "Status",
-                OldValue = oldStatus,
-                NewValue = lead.Status,
-                ChangedAt = DateTime.UtcNow,
-                ChangedBy = userId,
-                Origin = "API"
-            });
-        }
-
-        // Aquí podrías manejar otros campos (FullName, Email, Phone, etc.)
-
-        await _db.SaveChangesAsync();
-
-        var dto = new LeadDto
-        {
-            Id = lead.Id,
-            FullName = lead.FullName,
-            Email = lead.Email,
-            Status = lead.Status,
-            Source = lead.Source,
-            CreatedAt = lead.CreatedAt
+            Id = leadId,
+            FullName = "Lead de prueba",
+            Email = "lead.demo@example.com",
+            Status = newStatus,
+            Source = "Demo",
+            CreatedAt = DateTime.UtcNow.AddDays(-1)
         };
 
-        return Ok(dto);
+        return Ok(updatedLead);
     }
 }
 

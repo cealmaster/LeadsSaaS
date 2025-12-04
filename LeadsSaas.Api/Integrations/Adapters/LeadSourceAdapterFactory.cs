@@ -1,29 +1,40 @@
-﻿namespace LeadsSaas.Api.Integrations.Adapters
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace LeadsSaas.Api.Integrations.Adapters;
+
+public interface ILeadSourceAdapterFactory
 {
-    public interface ILeadSourceAdapterFactory
+    ILeadSourceAdapter GetAdapter(string source);
+}
+
+public class LeadSourceAdapterFactory : ILeadSourceAdapterFactory
+{
+    private readonly IServiceProvider _serviceProvider;
+
+    public LeadSourceAdapterFactory(IServiceProvider serviceProvider)
     {
-        ILeadSourceAdapter GetAdapter(string source);
+        _serviceProvider = serviceProvider;
     }
 
-    public class LeadSourceAdapterFactory : ILeadSourceAdapterFactory
+    public ILeadSourceAdapter GetAdapter(string source)
     {
-        private readonly IEnumerable<ILeadSourceAdapter> _adapters;
+        if (string.IsNullOrWhiteSpace(source))
+            throw new ArgumentNullException(nameof(source));
 
-        public LeadSourceAdapterFactory(IEnumerable<ILeadSourceAdapter> adapters)
+        // normalizamos para evitar problemas de mayúsculas/minúsculas
+        var normalized = source.Trim().ToLowerInvariant();
+
+        switch (normalized)
         {
-            _adapters = adapters;
-        }
+            case "googleads":
+                return _serviceProvider.GetRequiredService<GoogleAdsLeadAdapter>();
 
-        public ILeadSourceAdapter GetAdapter(string source)
-        {
-            var adapter = _adapters.FirstOrDefault(a =>
-                a.SourceName.Equals(source, StringComparison.OrdinalIgnoreCase));
+            case "facebookads":
+                return _serviceProvider.GetRequiredService<FacebookAdsLeadAdapter>();
 
-            if (adapter == null)
-                throw new InvalidOperationException($"No existe adapter configurado para la fuente '{source}'.");
-
-            return adapter;
+            default:
+                throw new InvalidOperationException(
+                    $"No existe adapter configurado para la fuente '{source}'.");
         }
     }
-
 }
