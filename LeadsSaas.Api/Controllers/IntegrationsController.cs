@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Authorize]
 [Route("tenants/{tenantId:guid}/integrations")]
 public class IntegrationsController : ControllerBase
 {
