@@ -100,15 +100,14 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 // ================= PIPELINE =================
-if (app.Environment.IsDevelopment())
+
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leads SaaS API v1");
-        c.DocumentTitle = "Leads SaaS API";
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leads SaaS API v1");
+    c.DocumentTitle = "Leads SaaS API";
+});
+
 
 app.UseAuthentication();
 app.UseMiddleware<TenantMiddleware>(); // debe ir antes de UseAuthorization
