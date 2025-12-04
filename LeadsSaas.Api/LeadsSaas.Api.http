@@ -1,0 +1,6 @@
+@LeadsSaas.Api_HostAddress = http://localhost:5022
+
+GET {{LeadsSaas.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

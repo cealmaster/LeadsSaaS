@@ -1,0 +1,61 @@
+# Build
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+logs/
+TestResults/
+publish/
+
+# Visual Studio / Rider / VSCode
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Resharper / Rider
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# OS files
+[Tt]humbs.db
+[Dd]esktop.ini
+.DS_Store
+*.swp
+*.tmp
+
+# Dotnet tools
+dotnet-tools.json
+
+# Config locales / secretos
+appsettings.*.Local.json
+appsettings.Local.json
+appsettings.Development.Local.json
+secrets.json
+
+# Logs de la app
+*.log
+
+# Coverage / análisis
+coverage/
+.coverage
+*.coverage
+*.coveragejson
+
+# SQL Server local
+*.mdf
+*.ldf
+
+# Docker (si llegas a usarlo)
+docker-compose.override.yml
+.env
